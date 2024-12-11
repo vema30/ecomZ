@@ -10,7 +10,7 @@ import ChangePassword from './components/ChangePassword';
 
 const App = () => {
   return (
-    <div className='bg-black w-full h-screen text-white'>
+    <div className=' text-white'>
         <Navbar/>
         <Routes>
         <Route path='/' element={<p>home</p>}></Route>
