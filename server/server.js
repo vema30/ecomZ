@@ -14,7 +14,7 @@ app.use(cors()); // This will allow all domains. You can configure it further if
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 connectDB();
-
+console.log(process.env.JWT_SECRET);
 // Use the user routes
 app.use('/api/users', userRoutes);
 
