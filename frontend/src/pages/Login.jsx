@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
    const[response1,setResponse]= useState("");
-
+const navigate= useNavigate();
   const handleClick = async () => {
     try {
-      const response = await axios.post("http://localhost:5000/api/users/login", {
+      const response = await axios.post("http://localhost:3000/api/users/login", {
         email,
         password,
       });
@@ -18,6 +19,9 @@ const Login = () => {
 
       console.log("Login successful:", response.data);
       setResponse("Login successful");
+      //window.location.reload();
+      navigate("/home");
+
           
 
       // Handle success (e.g., redirect or display a success message)
