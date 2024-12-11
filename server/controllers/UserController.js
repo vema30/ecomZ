@@ -121,8 +121,36 @@ const Login = async (req, res) => {
     });
   }
 };
+const getProfile = async (req, res) => {
+  try {
+    const { email } = req.user; // Assuming `email` is part of the user object attached after authentication
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Failed to get profile: User not found",
+        status: false,
+      });
+    }
+
+    return res.status(200).json({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phonenumber: user.phonenumber,
+    });
+  } catch (e) {
+    console.log("Error in getting profile");
+    console.log(e.message);
+    return res.status(500).json({
+      status: false,
+      message: "Failed to get profile",
+    });
+  }
+};
+
 
 module.exports = {
   Register,
   Login,
+  getProfile
 };
