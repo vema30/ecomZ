@@ -1,59 +1,67 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../slices/AuthSlice'; // Example action from auth slice
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-   const[response1,setResponse]= useState("");
-const navigate= useNavigate();
+  const [responseMessage, setResponseMessage] = useState("");
+  const navigate = useNavigate();
+  const dispatch = useDispatch(); // Correctly define dispatch
+
   const handleClick = async () => {
     try {
       const response = await axios.post("http://localhost:3000/api/users/login", {
         email,
         password,
       });
-      localStorage.setItem('authToken', response.data.token); // Use sessionStorage if needed
+
+      // Save the token securely
+      localStorage.setItem('authToken', response.data.token);
+
+      // Dispatch the login action to Redux
+      dispatch(login({ token: response.data.token, user: response.data.user }));
+
+      // Display success message
+      setResponseMessage("Login successful!");
       alert('Login successful!');
 
-      console.log("Login successful:", response.data);
-      setResponse("Login successful");
-      //window.location.reload();
+      // Redirect to home page
       navigate("/home");
 
-          
-
-      // Handle success (e.g., redirect or display a success message)
     } catch (error) {
-      
       console.error("Error during login:", error.response?.data || error.message);
-      setResponse(error.message);
-      // Handle error (e.g., display error message)
+      setResponseMessage(
+        error.response?.data?.message || "Login failed. Please try again."
+      );
     }
-    
   };
 
   return (
     <div className="bg-black h-screen w-screen flex flex-col justify-center items-center text-white text-2xl font-bold">
-        {response1}
+      {responseMessage && (
+        <div className="text-red-500 text-lg mb-4">{responseMessage}</div>
+      )}
       <div className="flex flex-col justify-center items-center w-full max-w-sm p-6 bg-gray-800 rounded-lg shadow-lg">
-        <label className="mb-4">Login</label>
+        <label className="mb-4 text-3xl text-white">Login</label>
         <input
           onChange={(e) => setEmail(e.target.value)}
           type="email"
           placeholder="Email"
-          className="m-2 text-xl p-3 rounded-lg border border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
+          value={email}
+          className="m-2 text-xl p-3 rounded-lg border border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 text-black w-full"
         />
-
-        <label className="mb-4">Password</label>
+        <label className="mb-4 text-white">Password</label>
         <input
           onChange={(e) => setPassword(e.target.value)}
           type="password"
           placeholder="Password"
-          className="m-2 text-xl p-3 rounded-lg border border-blue-500 focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
+          value={password}
+          className="m-2 text-xl p-3 rounded-lg border border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black w-full"
         />
-
         <div className="flex flex-col items-center w-full">
           <button
             onClick={handleClick}
@@ -61,12 +69,14 @@ const navigate= useNavigate();
           >
             Login
           </button>
-          <Link to="/register" className="text-xl text-gray-400 underline hover:text-white">
+          <Link
+            to="/register"
+            className="text-xl text-gray-400 underline hover:text-white"
+          >
             Register
           </Link>
         </div>
       </div>
-     
     </div>
   );
 };
