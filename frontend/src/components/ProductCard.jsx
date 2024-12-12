@@ -1,9 +1,16 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '../slices/CartSlice'; // Import the action
 
 const ProductCard = ({ product }) => {
+  const dispatch = useDispatch();
+
+  const handleAddToCart = () => {
+   dispatch(addToCart(product)); // Dispatch the action with the product data
+  };
+
   return (
     <div className="bg-white shadow-lg rounded-lg w-72 p-4 m-4">
-      {/* Make the image container responsive and set fixed height for uniformity */}
       <img 
         src={product.image} 
         alt={product.title} 
@@ -17,13 +24,19 @@ const ProductCard = ({ product }) => {
           <span>Rating: {product.rating.rate}</span>
           <span> ({product.rating.count} reviews)</span>
         </div>
-        <button className="bg-blue-500 text-white py-2 px-4 rounded mt-4 hover:bg-blue-600 transition">
+        <button 
+          onClick={handleAddToCart} 
+          className="bg-blue-500 text-white py-2 px-4 rounded mt-4 hover:bg-blue-600 transition"
+        >
           Add to Cart
         </button>
       </div>
     </div>
   );
 };
+
+
+
 
 // Sample usage of the ProductCard component
 const ProductList = ({ data }) => {

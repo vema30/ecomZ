@@ -39,6 +39,7 @@ const Navbar = () => {
           },
         })
         .then((response) => {
+          console.log("he",response.data);
           setRole(response.data.role);
         })
         .catch((error) => {
@@ -52,9 +53,10 @@ const Navbar = () => {
       <Link to={'/home'} className="text-white text-5xl font-bold hover:text-gray-400 transition duration-200">
         Ecomzy
       </Link>
+     
       <div className="flex w-[30%] justify-end space-x-6 font-semibold text-white">
         {/* Conditionally render the Admin link */}
-        {token && role === 'Admin' && (
+        { role=='Admin' && (
           <Link to={'/admin'} className="hover:text-gray-400 transition duration-200">Admin</Link>
         )}
         <Link to={'/home'} className="hover:text-gray-400 transition duration-200">Home</Link>

@@ -12,6 +12,7 @@ const App = () => {
   return (
     <div className=' text-white'>
         <Navbar/>
+       
         <Routes>
         <Route path='/' element={<p>home</p>}></Route>
         <Route path='/cart' element={<Cart/>}></Route>
