@@ -97,7 +97,7 @@ const Cart = () => {
           </div>
         </div>
       )}
-      <div className="mt-6 text-lg font-bold text-black">
+      <div className="mt-6 text-lg font-bold text-white">
         <div>Total: ${totalPrice}</div>
       </div>
     </div>

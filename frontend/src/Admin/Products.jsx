@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../slices/CartSlice'; // Import the action
 import { useNavigate } from 'react-router-dom';
-
+import axios from 'axios'; // For fetching product data from the backend
+import AdminPage from './AdminPage';
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn); // Check login state from Redux
 
   const handleAddToCart = () => {
-    console.log(isLoggedIn);
     if (isLoggedIn) {
       dispatch(addToCart(product)); // Dispatch the action with the product data
       alert('Product added to cart!');
@@ -21,6 +21,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <div className="bg-white shadow-lg rounded-lg w-72 p-4 m-4">
+
       <img
         src={product.image}
         alt={product.title}
@@ -45,15 +46,41 @@ const ProductCard = ({ product }) => {
   );
 };
 
-// Sample usage of the ProductCard component
-const ProductList = ({ data }) => {
+const Products = () => {
+  const [products, setProducts] = useState([]); // State to store products
+  const [loading, setLoading] = useState(true); // State to handle loading
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/getproducts'); // Adjust the URL to your backend API
+        setProducts(response.data); // Assuming the backend returns an array of products
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>; // Display a loading message while data is being fetched
+  }
+
   return (
+    <div><AdminPage/>
     <div className="flex flex-wrap justify-center">
-      {data.map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
+    
+      {products.length === 0 ? (
+        <p>No products available</p>
+      ) : (
+        products.map((product) => <ProductCard key={product.id} product={product} />) // Render ProductCard for each product
+      )}
+    </div>
     </div>
   );
 };
 
-export default ProductList;
+export default Products;

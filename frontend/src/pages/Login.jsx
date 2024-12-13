@@ -1,82 +1,114 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { login } from '../slices/AuthSlice'; // Example action from auth slice
+import { login } from '../slices/AuthSlice'; // Redux action for login
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [responseMessage, setResponseMessage] = useState("");
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // Correctly define dispatch
+  const dispatch = useDispatch();
 
-  const handleClick = async () => {
+  const handleLogin = async (e) => {
     try {
-      const response = await axios.post("http://localhost:3000/api/users/login", {
+      e.preventDefault();
+      setLoading(true);  // Show loading message
+
+      // API call to login
+      
+      const response = await axios.post('http://localhost:3000/api/users/login', {
         email,
         password,
       });
-
-      // Save the token securely
+      setLoading(false);
+      toast.success('login successfull!');
+      
+      // Save the token in localStorage
       localStorage.setItem('authToken', response.data.token);
+      setMessage(response.data.message)
+      // Dispatch Redux action to store user details
+      dispatch(login({ user: response.data.user }));
 
-      // Dispatch the login action to Redux
-      dispatch(login({ token: response.data.token, user: response.data.user }));
 
-      // Display success message
-      setResponseMessage("Login successful!");
-      alert('Login successful!');
+      // Show success toast notification
+     
 
-      // Redirect to home page
-      navigate("/home");
-
+      // Navigate to home page
+      navigate('/home');
+     // window.location.reload();
     } catch (error) {
-      console.error("Error during login:", error.response?.data || error.message);
-      setResponseMessage(
-        error.response?.data?.message || "Login failed. Please try again."
-      );
+      toast.error('login failed try again!');
+      setMessage(response.data.message)
+
+      setLoading(false);  // Hide loading message
+
+      // Show error toast notification
+      
     }
   };
 
   return (
-    <div className="bg-black h-screen w-screen flex flex-col justify-center items-center text-white text-2xl font-bold">
-      {responseMessage && (
-        <div className="text-red-500 text-lg mb-4">{responseMessage}</div>
-      )}
-      <div className="flex flex-col justify-center items-center w-full max-w-sm p-6 bg-gray-800 rounded-lg shadow-lg">
-        <label className="mb-4 text-3xl text-white">Login</label>
-        <input
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-          placeholder="Email"
-          value={email}
-          className="m-2 text-xl p-3 rounded-lg border border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 text-black w-full"
-        />
-        <label className="mb-4 text-white">Password</label>
-        <input
-          onChange={(e) => setPassword(e.target.value)}
-          type="password"
-          placeholder="Password"
-          value={password}
-          className="m-2 text-xl p-3 rounded-lg border border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black w-full"
-        />
-        <div className="flex flex-col items-center w-full">
+    <div className="bg-black min-h-screen flex flex-col justify-center items-center text-white">
+      {/* Toast container to display notifications */}
+      <div><ToastContainer/></div>
+           {message}
+      {/* Login Form */}
+      {!loading ? (
+        <div className="w-full max-w-sm p-6 bg-gray-800 rounded-lg shadow-lg">
+          <h1 className="text-3xl font-bold mb-6 text-center">Login</h1>
+
+          {/* Email Field */}
+          <div className="mb-4">
+            <label className="block text-lg mb-2">Email</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full text-black text-lg p-3 rounded-lg border border-gray-400 focus:ring-2 focus:ring-red-500 focus:outline-none"
+            />
+          </div>
+
+          {/* Password Field */}
+          <div className="mb-6">
+            <label className="block text-lg mb-2">Password</label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full text-black text-lg p-3 rounded-lg border border-gray-400 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          {/* Login Button */}
           <button
-            onClick={handleClick}
-            className="bg-green-800 text-white text-xl p-3 m-3 w-full rounded-lg hover:bg-green-700 transition duration-200"
+            onClick={handleLogin}
+            className="w-full bg-green-600 hover:bg-green-700 text-lg font-bold text-white py-3 rounded-lg transition duration-200"
           >
             Login
           </button>
-          <Link
-            to="/register"
-            className="text-xl text-gray-400 underline hover:text-white"
-          >
-            Register
-          </Link>
+
+          {/* Register Link */}
+          <div className="mt-4 text-center">
+            <span className="text-gray-400">Don't have an account?</span>{' '}
+            <Link
+              to="/register"
+              className="text-blue-400 underline hover:text-blue-600"
+            >
+              Register here
+            </Link>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="text-xl text-white">Loading...</div>
+      )}
+      
     </div>
   );
 };

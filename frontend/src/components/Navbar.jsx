@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios'; // Ensure axios is imported
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
+import { useDispatch } from 'react-redux';
+import { logout } from '../slices/AuthSlice'; 
 const Navbar = () => {
   const [token, setToken] = useState(localStorage.getItem('authToken'));
+  const [role, setRole] = useState(null);
+  const dispatch = useDispatch();
 
   // Listen for changes in localStorage
   useEffect(() => {
@@ -14,24 +19,14 @@ const Navbar = () => {
     // Add event listener for changes to localStorage
     window.addEventListener('storage', handleStorageChange);
 
-    // Clean up event listener
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    alert('Logged out successfully!');
-    // Trigger a local state change to re-render the navbar
-    setToken(null); // Manually update the token to force a re-render
-  };
-
-  const [role, setRole] = useState(null);
-
   useEffect(() => {
     if (token) {
-      // Fetch the profile data when the component mounts
+      // Fetch the profile data when the token is present
       axios
         .get('http://localhost:3000/api/users/profile', {
           headers: {
@@ -39,7 +34,7 @@ const Navbar = () => {
           },
         })
         .then((response) => {
-          console.log("he",response.data);
+          console.log('Profile data:', response.data);
           setRole(response.data.role);
         })
         .catch((error) => {
@@ -48,37 +43,54 @@ const Navbar = () => {
     }
   }, [token]);
 
+  const handleLogout = () => {
+    toast.success('login out successfull!');
+    localStorage.removeItem('authToken');
+    alert('Logged out successfully!');
+    setToken(null); // Update the token to re-render the navbar
+    dispatch(logout());
+  };
+
   return (
-    <div className="flex justify-between bg-gray-800 p-5 text-2xl items-center shadow-lg">
-      <Link to={'/home'} className="text-white text-5xl font-bold hover:text-gray-400 transition duration-200">
-        Ecomzy
-      </Link>
-     
-      <div className="flex w-[30%] justify-end space-x-6 font-semibold text-white">
-        {/* Conditionally render the Admin link */}
-        { role=='Admin' && (
-          <Link to={'/admin'} className="hover:text-gray-400 transition duration-200">Admin</Link>
-        )}
-        <Link to={'/home'} className="hover:text-gray-400 transition duration-200">Home</Link>
-        <Link to={'/cart'} className="hover:text-gray-400 transition duration-200">Cart</Link>
+    <nav className="flex justify-between items-center bg-gray-900 p-4 shadow-md text-white">
+      <div className="flex items-center space-x-4">
+        <Link to="/home" className="text-3xl font-bold text-blue-400 hover:text-blue-300">
+          Ecomzy
+        </Link>
+      </div>
 
-        {!token && (
-          <Link to={'/login'} className="hover:text-gray-400 transition duration-200">Login</Link>
+      <div className="flex items-center space-x-6">
+        {role === 'Admin' && (
+          <Link to="/admin" className="text-lg hover:text-blue-300 transition">
+            Admin
+          </Link>
         )}
+        <Link to="/home" className="text-lg hover:text-blue-300 transition">
+          Home
+        </Link>
+        <Link to="/cart" className="text-lg hover:text-blue-300 transition">
+          Cart
+        </Link>
 
-        {token && (
-          <div className="gap-3 flex">
-            <Link to={'/profile'} className="hover:text-gray-400 transition duration-200">Profile</Link>
-            <div
-              className="hover:text-gray-400 transition duration-200 p-2 border bg-red-800 cursor-pointer"
+        {!token ? (
+          <Link to="/login" className="text-lg hover:text-blue-300 transition">
+            Login
+          </Link>
+        ) : (
+          <div className="flex items-center space-x-4">
+            <Link to="/profile" className="text-lg hover:text-blue-300 transition">
+              Profile
+            </Link>
+            <button
               onClick={handleLogout}
+              className="bg-red-600 px-4 py-2 rounded-lg text-white hover:bg-red-500 transition"
             >
               Logout
-            </div>
+            </button>
           </div>
         )}
       </div>
-    </div>
+    </nav>
   );
 };
 
