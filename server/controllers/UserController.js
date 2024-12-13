@@ -1,9 +1,9 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
+const Product = require('../models/Product'); 
 require('dotenv').config();
-
+const cloudinary = require('cloudinary').v2; 
 
 const Register = async (req, res) => {
   try {
@@ -137,6 +137,7 @@ const getProfile = async (req, res) => {
       firstName: user.firstName,
       lastName: user.lastName,
       phonenumber: user.phonenumber,
+      role:user.role
     });
   } catch (e) {
     console.log("Error in getting profile");
@@ -149,8 +150,58 @@ const getProfile = async (req, res) => {
 };
 
 
+const addProduct = async (req, res) => {
+  try {
+    const { title, price, description, category, rating } = req.body;
+    const image = req.file;
+    console.log(req.body); 
+    console.log(image);
+
+    if (!title || !price || !description || !category ||!image || !rating) {
+      return res.status(400).json({ message: 'All fields are required.' });
+    }
+
+    // Parse the rating object
+    const parsedRating = JSON.parse(rating);
+
+    // Validate rating fields
+    // if (!parsedRating.rate || !parsedRating.count) {
+    //   return res.status(400).json({ message: 'Rating must have both rate and count.' });
+    // }
+
+    // Upload image to Cloudinary
+    const uploadResult = await cloudinary.uploader.upload(image.path);
+
+    // Create a new product instance
+    const newProduct = new Product({
+      title,
+      price,
+      description,
+      category,
+      image: uploadResult.secure_url, // Cloudinary image URL
+      rating: parsedRating,  // Pass the parsed rating
+    });
+
+    // Save product to database
+    const savedProduct = await newProduct.save();
+
+    res.status(201).json({
+      message: 'Product added successfully!',
+      product: savedProduct,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while adding the product.' });
+  }
+};
+
+
+module.exports = { addProduct };
+
+
 module.exports = {
   Register,
   Login,
-  getProfile
+  getProfile,
+  addProduct
 };
