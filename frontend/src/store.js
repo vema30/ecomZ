@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import cartReducer from './slices/CartSlice';
 import authReducer from './slices/AuthSlice';
-
+import homeCartReducer from './slices/AddToHome';
 // Check for saved token and user in localStorage
 const savedToken = localStorage.getItem('authToken');
 const savedUser = JSON.parse(localStorage.getItem('user'));
@@ -14,6 +14,7 @@ const initialAuthState = savedToken
 const store = configureStore({
   reducer: {
     cart: cartReducer,
+    homeCart: homeCartReducer,
     auth: authReducer, // Include auth slice for handling authentication state
   },
   preloadedState: {

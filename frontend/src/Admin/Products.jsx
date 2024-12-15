@@ -1,27 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToCart } from '../slices/CartSlice'; // Import the action
+import { addToCart } from '../slices/AddToHome'; // Import AddToHome action
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // For fetching product data from the backend
+import axios from 'axios';
 import AdminPage from './AdminPage';
+
+// ProductCard Component
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn); // Check login state from Redux
 
-  const handleAddToCart = () => {
+  const handleAddToHome = () => {
     if (isLoggedIn) {
-      dispatch(addToCart(product)); // Dispatch the action with the product data
-      alert('Product added to cart!');
+      dispatch(addToCart(product)); // Dispatch action to add product to "Home"
+      alert('Product added to Home successfully!');
     } else {
-      alert('Please login to add items to the cart.');
-      navigate('/login'); // Redirect to login page if not logged in
+      alert('Please login to add items to the Home.');
+      navigate('/login'); // Redirect to login if not logged in
     }
   };
 
   return (
     <div className="bg-white shadow-lg rounded-lg w-72 p-4 m-4">
-
       <img
         src={product.image}
         alt={product.title}
@@ -36,28 +37,31 @@ const ProductCard = ({ product }) => {
           <span> ({product.rating.count} reviews)</span>
         </div>
         <button
-          onClick={handleAddToCart}
+          onClick={handleAddToHome}
           className="bg-blue-500 text-white py-2 px-4 rounded mt-4 hover:bg-blue-600 transition"
         >
-          Add to Cart
+          Add to Home
         </button>
       </div>
     </div>
   );
 };
 
+// Products Component
 const Products = () => {
   const [products, setProducts] = useState([]); // State to store products
   const [loading, setLoading] = useState(true); // State to handle loading
+  const [error, setError] = useState(''); // State to capture errors
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/getproducts'); // Adjust the URL to your backend API
-        setProducts(response.data); // Assuming the backend returns an array of products
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching products:', error);
+        const response = await axios.get('http://localhost:3000/getproducts'); // Fetch products from backend
+        setProducts(response.data); // Assuming backend returns an array of products
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products. Please try again later.');
+      } finally {
         setLoading(false);
       }
     };
@@ -66,19 +70,25 @@ const Products = () => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>; // Display a loading message while data is being fetched
+    return <div>Loading...</div>; // Show loading indicator
+  }
+
+  if (error) {
+    return <div className="text-red-500 text-center">{error}</div>; // Display error message
   }
 
   return (
-    <div><AdminPage/>
-    <div className="flex flex-wrap justify-center">
-    
-      {products.length === 0 ? (
-        <p>No products available</p>
-      ) : (
-        products.map((product) => <ProductCard key={product.id} product={product} />) // Render ProductCard for each product
-      )}
-    </div>
+    <div>
+      <AdminPage /> {/* Include AdminPage */}
+      <div className="flex flex-wrap justify-center">
+        {products.length === 0 ? (
+          <p>No products available</p> // Message for empty product list
+        ) : (
+          products.map((product) => (
+            <ProductCard key={product.id} product={product} /> // Render ProductCard
+          ))
+        )}
+      </div>
     </div>
   );
 };
